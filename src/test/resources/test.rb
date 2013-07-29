@@ -15,6 +15,10 @@ class Person
     javax.swing.JLabel.new(fullname)
   end
 
+  def greet(person)
+    person.greet("Hi, I'm #{firstname}")
+  end
+
   def ==(other)
     other.firstname == firstname and other.lastname == lastname
   end
