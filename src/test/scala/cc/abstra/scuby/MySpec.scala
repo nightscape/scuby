@@ -109,8 +109,8 @@ class ExtendedTest extends SpecificationWithJUnit with BeforeExample {
   "Scuby" should {
     "create an object with parameters using the RubyObject constructor" in {
       val person = new RubyObject('Person, "Eccentrica", "Gallumbits")
-      val firstName:String = person send 'firstname
-      val lastName:String = person send 'lastname
+      val firstName:String = person.firstname
+      val lastName:String = person.lastname
       firstName must beEqualTo("Eccentrica")
       lastName must beEqualTo("Gallumbits")
     }
@@ -135,17 +135,17 @@ class ExtendedTest extends SpecificationWithJUnit with BeforeExample {
 
     "add elements to an Array" in {
       val trillian = new RubyObject('Person, "Tricia", "McMillan")
-      val people = backend ! 'get_people
+      val people:RubyObject = backend.get_people
       people(3) = trillian
 
-      val length:Long = people send 'length
+      val length:Long = people.length
       length must beEqualTo(4)
 
       people(3) must beEqualTo(trillian)
     }
 
     "call a method on a Ruby object or class and get back another Ruby object" in {
-      val ford1 = backend ! ('get_person, "Ford")
+      val ford1 = backend.get_person("Ford")
       val ford2 = new RubyObject('Person, "Ford", "Prefect")
       ford1 must beEqualTo(ford2)
     }
