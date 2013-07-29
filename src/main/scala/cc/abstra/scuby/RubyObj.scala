@@ -111,40 +111,43 @@ trait RubyObj {
     val theClass = classTag.runtimeClass.asInstanceOf[Class[T]]
     // Doesn't work, test crashes with "java.lang.IncompatibleClassChangeError: cc.abstra.scuby.test.ExtendedTest and cc.abstra.scuby.test.ExtendedTest$$anonfun$2$$anonfun$apply$127$Person$1 disagree on InnerClasses attribute"
     //JRuby.ruby.getInstance(obj, theClass).asInstanceOf[T]
+    val rubyName = Map(
+      "toString" -> "to_s",
+      "plus" -> "+",
+      "minus" -> "-",
+      "colon" -> ":",
+      "div" -> "/",
+      "eq" -> "=",
+      "less" -> "<",
+      "greater" -> ">",
+      "bslash" -> "\\",
+      "hash" -> "#",
+      "times" -> "*",
+      "bang" -> "!",
+      "at" -> "@",
+      "percent" -> "%",
+      "up" -> "^",
+      "amp" -> "&",
+      "tilde" -> "~",
+      "qmark" -> "?",
+      "bar" -> "|"
+    )
     theClass.cast(
-                   Proxy.newProxyInstance(
-                                           theClass.getClassLoader(),
-                                           Array(theClass),
-                                           new InvocationHandler {
-                                             def invoke(target: AnyRef, method: Method, params: Array[AnyRef]): AnyRef = {
-                                               val splitName = method.getName split '$'
-                                               val methodName = if (splitName.length == 1) splitName(0)
-                                                                else {
-                                                                  val n = if (splitName(0) endsWith "_") splitName(0).substring(0, splitName(0).length - 1)
-                                                                          else splitName(0)
-                                                                  n + (splitName(1) match {
-                                                                    case "plus" => "+"
-                                                                    case "minus" => "-"
-                                                                    case "colon" => ":"
-                                                                    case "div" => "/"
-                                                                    case "eq" => "="
-                                                                    case "less" => "<"
-                                                                    case "greater" => ">"
-                                                                    case "bslash" => "\\"
-                                                                    case "hash" => "#"
-                                                                    case "times" => "*"
-                                                                    case "bang" => "!"
-                                                                    case "at" => "@"
-                                                                    case "percent" => "%"
-                                                                    case "up" => "^"
-                                                                    case "amp" => "&"
-                                                                    case "tilde" => "~"
-                                                                    case "qmark" => "?"
-                                                                    case "bar" => "|"
-                                                                  })
-                                                                }
-                                               send[AnyRef](JavaUtil.getRubyCasedName(methodName), params: _*)
-                                             }}))
+      Proxy.newProxyInstance(
+        theClass.getClassLoader(),
+        Array(theClass),
+        new InvocationHandler {
+          def invoke(target: AnyRef, method: Method, params: Array[AnyRef]): AnyRef = {
+            val splitName = method.getName split '$'
+            val methodName = if (splitName.length == 1) rubyName.getOrElse(splitName(0), splitName(0))
+            else {
+              val n = if (splitName(0) endsWith "_") splitName(0).substring(0, splitName(0).length - 1)
+              else splitName(0)
+              n + (splitName.drop(1).map(x => rubyName.getOrElse(x, x)).mkString(""))
+            }
+            send[AnyRef](JavaUtil.getRubyCasedName(methodName), params: _*)
+          }
+        }))
   }
 
   /**

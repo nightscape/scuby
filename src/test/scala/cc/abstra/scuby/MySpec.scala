@@ -187,5 +187,16 @@ class ExtendedTest extends SpecificationWithJUnit with BeforeExample {
       zaphod.fullname must beEqualTo("The Zeeb Beeblebrox")
       zaphod.getLabel.getText must beEqualTo("The Zeeb Beeblebrox")
     }
+
+    "wrap a JRuby array in a Scala trait" in {
+      trait RubyArray {
+        def <<(obj: AnyRef): Unit
+        def join(s:String): String
+      }
+      val array = new RubyObject('Array).as[RubyArray]
+      array << "Number One"
+      array << "Number Two"
+      array.join(",") must beEqualTo("Number One,Number Two")
+    }
   }
 }
