@@ -99,7 +99,7 @@ class BasicTest extends SpecificationWithJUnit  {
 }
 
 class ExtendedTest extends SpecificationWithJUnit with BeforeExample {
-  class ScalaPerson(var greeted: String = null) {
+  class ScalaPerson(val firstname:String="Anonymous", var greeted: String = null) {
     def greet(greeting: String) { greeted = greeting }
   }
 
@@ -175,13 +175,19 @@ class ExtendedTest extends SpecificationWithJUnit with BeforeExample {
     }
 
     "call a Ruby method that interacts with a Scala object" in {
-
       val zaphod = new RubyObject('Person, "Zaphod", "Beeblebrox")
       val ford = new ScalaPerson
       zaphod.greet(ford)
       ford.greeted must beEqualTo("Hi, I'm Zaphod")
     }
 
+    "call a Ruby method with multiple parameters" in {
+      val zaphod = new RubyObject('Person, "Zaphod", "Beeblebrox")
+      val ford = new ScalaPerson("Ford")
+      val barney = new ScalaPerson("Barney")
+      zaphod.introduce(barney, ford)
+      barney.greeted must beEqualTo("Hi, I'm Zaphod. Have you met Ford?")
+    }
     "wrap a JRuby object in a Scala trait" in {
       trait Person {
         def firstname: String

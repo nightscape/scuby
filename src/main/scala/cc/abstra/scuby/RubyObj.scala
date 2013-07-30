@@ -36,7 +36,7 @@ trait RubyObj extends Dynamic {
    */
   val obj: JRubyObject
 
-  def applyDynamic(name: String)(block: => Any, args: (String, Any)*): Any = send[Any](name, block)
+  def applyDynamic(name: String)(args: Any*): Any = send[Any](name, args:_*)
 
   def selectDynamic[T](name: String): T = send[T](name)
   /**

@@ -19,6 +19,10 @@ class Person
     person.greet("Hi, I'm #{firstname}")
   end
 
+  def introduce(person1, person2)
+    person1.greet("Hi, I'm #{firstname}. Have you met #{person2.firstname}?")
+  end
+
   def ==(other)
     other.firstname == firstname and other.lastname == lastname
   end
