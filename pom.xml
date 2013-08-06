@@ -47,7 +47,7 @@
     <properties>
         <scala.version>2.10.0</scala.version>
         <scala.library.version>2.10</scala.library.version>
-        <jruby.version>1.7.2</jruby.version>
+        <jruby.version>1.7.4</jruby.version>
         <specs2.version>1.13</specs2.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

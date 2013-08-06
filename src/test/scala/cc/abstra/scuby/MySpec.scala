@@ -1,11 +1,11 @@
 package cc.abstra.scuby.test
 
 import org.specs2.mutable.SpecificationWithJUnit
-
 import cc.abstra.scuby._
 import JRuby._
 import org.specs2.specification.BeforeExample
 import javax.swing.JLabel
+import org.jruby.runtime.builtin.IRubyObject
 
 class BasicTest extends SpecificationWithJUnit  {
   "Scuby" should {
@@ -188,6 +188,20 @@ class ExtendedTest extends SpecificationWithJUnit with BeforeExample {
       zaphod.introduce(barney, ford)
       barney.greeted must beEqualTo("Hi, I'm Zaphod. Have you met Ford?")
     }
+
+
+    "use a Scala function as a Ruby block" in {
+      backend.get_person("Zaphod")
+      val allPeople = new scala.collection.mutable.MutableList[AnyRef]
+      backend.everybody { p: Array[IRubyObject] =>
+        allPeople += p.head.asInstanceOf[AnyRef]
+        p.head
+      }
+      val res:RubyObj = backend.get_people
+      val javaArr:Array[AnyRef] = res.to_java
+      allPeople must beEqualTo(javaArr.to[Vector])
+    }
+
     "wrap a JRuby object in a Scala trait" in {
       trait Person {
         def firstname: String

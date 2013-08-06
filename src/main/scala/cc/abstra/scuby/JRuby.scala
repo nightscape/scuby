@@ -6,15 +6,17 @@
 
 package cc.abstra.scuby
 
-import java.util.logging.{Logger, Level}
-
-import org.jruby.{RubyObject => JRubyObject}
-import org.jruby.embed.{ScriptingContainer,LocalContextScope,LocalVariableBehavior}
+import java.util.logging.{ Logger, Level }
+import org.jruby.{ RubyObject => JRubyObject }
+import org.jruby.embed.{ ScriptingContainer, LocalContextScope, LocalVariableBehavior }
 import org.jruby.exceptions.RaiseException
-import org.jruby.{RubyInstanceConfig,CompatVersion}
+import org.jruby.{ RubyInstanceConfig, CompatVersion }
 import RubyInstanceConfig.CompileMode
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
+import org.jruby.runtime.CallBlock19
+import org.jruby.runtime.ThreadContext
+import org.jruby.runtime.builtin.IRubyObject
 
 /**
  * This trait is one of the main entry points into Scuby. Including it allows you to
@@ -116,13 +118,28 @@ object JRuby extends JRuby {
    * @see unwrap[T
    */
   private[scuby] def send[T](target: JRubyObject, name: Symbol, args: Any*) = {
+    val maybeFunction = extractBlock(args: _*)
     handleException(
       wrap[T](
-        ruby.callMethod(target, name.name, unwrap(args:_*):_*)
+        maybeFunction.map {
+          case (func, remainingArgs) =>
+            val newArgs = args.map(_.asInstanceOf[AnyRef]).to[Array]
+            ruby.callMethod(target, name.name, newArgs, CallBlock19.newCallClosure(target, null, null, new ScalaFunctionAsRubyBlockCallback(func), target.getRuntime().getCurrentContext()), classOf[Object])
+        }.getOrElse {
+          ruby.callMethod(target, name.name, unwrap(args: _*): _*)
+        }
+
       )
     )
   }
 
+  private[scuby] def extractBlock(args: Any*): Option[(Array[IRubyObject] => IRubyObject, Seq[Any])] = {
+    Option(args).flatMap(_.lastOption.flatMap { arg =>
+      if (arg.isInstanceOf[Array[IRubyObject] => IRubyObject])
+        Some((arg.asInstanceOf[Array[IRubyObject] => IRubyObject], args.dropRight(1)))
+      else None
+    })
+  }
   /**
    * Unwraps a parameter list. Wrapped org.jruby.RubyObject's are extracted from their wrappers, Scala Symbols are
    * converted to Ruby Symbols and primitives are boxed. All other values are left as-is. Note that this is

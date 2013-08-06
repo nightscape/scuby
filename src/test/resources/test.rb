@@ -45,6 +45,13 @@ module Backend
    ]
   end
 
+  def self.everybody(*args)
+    puts "Backend.everybody called with #{args.inspect}"
+    get_people.each do |p|
+      yield p
+    end
+  end
+
   def self.get_data
     { :people => get_people, :other_data => get_other_data }
   end
